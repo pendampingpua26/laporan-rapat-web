@@ -42,9 +42,7 @@ export default function Wizard({ mode, editKey, monRowId, planId, initial, draft
         try {
           const r = await rpc<{ fields: Record<string, string>; photos: Files }>('getReport', { key: editKey });
           if (!alive) return;
-          const f = { ...initial, ...r.fields };
-          if (!String(f['Judul Laporan'] || '').trim()) f['Judul Laporan'] = f['Acara'] || ''; // laporan lama belum punya judul
-          setValues(f);
+          setValues({ ...initial, ...r.fields });
           setFiles({ ...EMPTY, ...r.photos });
         } catch (e: any) {
           if (alive) setLoadErr(e.message);
@@ -108,7 +106,6 @@ export default function Wizard({ mode, editKey, monRowId, planId, initial, draft
       scrollToFirst(e);
       return;
     }
-    if (step === 0 && !String(values['Judul Laporan'] || '').trim()) set('Judul Laporan', values['Acara'] || '');
     setStep(step + 1);
     window.scrollTo({ top: 0 });
   }
