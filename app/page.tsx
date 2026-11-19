@@ -4,12 +4,13 @@ import Login from '@/components/Login';
 import Monitoring from '@/components/Monitoring';
 import Wizard from '@/components/Wizard';
 import DriveLinks from '@/components/DriveLinks';
+import Jadwal from '@/components/Jadwal';
 import { rpc } from '@/lib/client';
-import type { Item, ListData } from '@/lib/types';
+import type { Item, ListData, Plan } from '@/lib/types';
 import type { Status } from '@/lib/status';
 
-type View = 'monitor' | 'form' | 'drive';
-type FormTarget = { mode: 'create' | 'edit'; item?: Item; draftId: string };
+type View = 'monitor' | 'jadwal' | 'form' | 'drive';
+type FormTarget = { mode: 'create' | 'edit'; item?: Item; plan?: Plan; draftId: string };
 type Toast = { text: string; bad?: boolean; undo?: () => void } | null;
 
 export default function Home() {
@@ -87,6 +88,12 @@ export default function Home() {
     window.scrollTo({ top: 0 });
   }
 
+  function openFromPlan(plan: Plan) {
+    setTarget({ mode: 'create', plan, draftId: 'plan-' + plan.id });
+    setView('form');
+    window.scrollTo({ top: 0 });
+  }
+
   function newBlank() {
     setTarget({ mode: 'create', draftId: 'baru' });
     setView('form');
@@ -94,10 +101,12 @@ export default function Home() {
   }
 
   async function del(item: Item) {
-    if (!window.confirm(`Hapus laporan “${item.acara}”?\n\nDokumen dan PDF dipindah ke sampah Drive, dan baris isinya dihapus. Rapatnya tetap ada di daftar dengan status Belum Dibuat.`)) return;
+    if (!window.confirm(`Hapus “${item.acara}”?\n\nRapat ini hilang dari daftar dan dari spreadsheet monitoring. Dokumen dan PDF dipindah ke sampah Drive. Tidak bisa dibatalkan.`)) return;
     try {
-      await rpc('remove', { key: item.key });
-      say({ text: 'Laporan dihapus.' });
+      await rpc('remove', { key: item.key, rowId: item.rowId });
+      // langsung hilang dari layar tanpa menunggu muat ulang
+      setData((d) => (d ? { ...d, items: d.items.filter((i) => i.rowId !== item.rowId) } : d));
+      say({ text: 'Terhapus dari daftar dan spreadsheet monitoring.' });
       load();
     } catch (e: any) {
       say({ text: 'Gagal menghapus: ' + e.message, bad: true }, 9000);
@@ -119,6 +128,11 @@ export default function Home() {
   if (!authed) return <Login onDone={() => setAuthed(true)} />;
 
   const initial: Record<string, string> = {};
+  if (target?.plan) {
+    initial['Acara'] = target.plan.rapat;
+    initial['Judul Laporan'] = target.plan.rapat;
+    if (target.plan.tanggalIso) initial['Hari/Tanggal Pelaksanaan Rapat'] = target.plan.tanggalIso;
+  }
   if (target?.item) {
     const it = target.item;
     if (it.acara) initial['Acara'] = it.acara;
@@ -131,7 +145,7 @@ export default function Home() {
     <>
       <div className="wrap">
         {view === 'monitor' && (
-          <Monitoring data={data} loading={loading} error={error} onReload={load} onStatus={changeStatus} onForm={openForm} onDelete={del} />
+          <Monitoring data={data} loading={loading} error={error} onReload={load} onStatus={changeStatus} onForm={openForm} onDelete={del} onPlan={openFromPlan} />
         )}
         {view === 'form' && target && (
           <Wizard
@@ -139,11 +153,15 @@ export default function Home() {
             mode={target.mode}
             editKey={target.item?.key}
             monRowId={target.item?.rowId}
+            planId={target.plan?.id}
             initial={initial}
             draftId={target.draftId}
             onClose={closeForm}
             onSaved={load}
           />
+        )}
+        {view === 'jadwal' && (
+          <Jadwal plans={data?.plans || []} loading={loading} onReload={load} onCreate={openFromPlan} say={(text, bad) => say({ text, bad })} />
         )}
         {view === 'drive' && <DriveLinks data={data} loading={loading} />}
         {view === 'monitor' && (
@@ -163,6 +181,9 @@ export default function Home() {
       <nav className="nav" aria-label="Menu utama">
         <button className={view === 'monitor' ? 'on' : ''} onClick={() => { setView('monitor'); setTarget(null); }}>
           <span className="ic" aria-hidden>📋</span>Monitoring
+        </button>
+        <button className={view === 'jadwal' ? 'on' : ''} onClick={() => { setView('jadwal'); setTarget(null); }}>
+          <span className="ic" aria-hidden>🗓️</span>Jadwal
         </button>
         <button className={view === 'form' ? 'on' : ''} onClick={newBlank}>
           <span className="ic" aria-hidden>➕</span>Buat laporan

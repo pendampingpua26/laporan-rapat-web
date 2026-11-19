@@ -125,3 +125,19 @@ textarea { resize: vertical; }
 .banner { background: var(--act-bg); color: var(--act); border: 1px solid var(--act); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-weight: 600; }
 .center { text-align: center; padding: 40px 0; color: var(--muted); }
 .stat { display: flex; gap: 10px; margin-bottom: 8px; }
+
+/* pengingat & jadwal rapat */
+.remind { background: var(--wait-bg); border: 2px solid var(--wait); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
+.remind h2 { margin: 0 0 8px; font-size: 1.05rem; color: var(--wait); }
+.remind .it { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px dashed var(--wait); }
+.remind .it:first-of-type { border-top: 0; }
+.remind .it .tx { flex: 1; min-width: 0; }
+.remind .it b { display: block; overflow-wrap: anywhere; }
+.remind button { min-height: 44px; padding: 6px 14px; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: .85rem; font-weight: 700; margin-right: 6px; }
+.tag.segera { background: var(--wait-bg); color: var(--wait); border: 1px solid var(--wait); }
+.tag.terlewat { background: var(--act-bg); color: var(--act); }
+.tag.selesai { background: var(--ok-bg); color: var(--ok); }
+.tag.akan { background: var(--info-bg); color: var(--info); }
+.riwayat { white-space: pre-line; font-size: .9rem; color: var(--muted); background: #f4f6f9; border-radius: 10px; padding: 8px 10px; }
+.nav button { min-width: 0; }
