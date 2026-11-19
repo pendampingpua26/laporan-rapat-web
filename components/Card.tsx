@@ -16,6 +16,7 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
   const next = NEXT[item.status];
   const hasReport = !!item.linkLaporan;
   const canEdit = !!item.key; // laporan dari aplikasi punya ID; laporan Google Form lama tidak
+  const canDelete = !!item.rowId; // semua baris monitoring bisa dihapus
 
   return (
     <div className="card">
@@ -26,6 +27,7 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
       <div className={'badge ' + meta.tone}>
         <span aria-hidden>{meta.icon}</span> {item.status}
       </div>
+      {item.revisi > 0 && <div className="meta">Sudah direvisi {item.revisi}×</div>}
 
       <div className="progress" aria-label={'Tahap: ' + item.status}>
         {STAGES.map((s, i) => {
@@ -80,8 +82,14 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
           {hasReport && !canEdit && (
             <div className="meta">Laporan ini dibuat lewat Google Form lama, jadi belum bisa diedit di aplikasi.</div>
           )}
-          {canEdit && hasReport && (
-            <button className="danger" onClick={() => onDelete(item)}>Hapus laporan</button>
+          {item.riwayat && (
+            <details>
+              <summary className="meta">Riwayat status</summary>
+              <div className="riwayat">{item.riwayat}</div>
+            </details>
+          )}
+          {canDelete && (
+            <button className="danger" onClick={() => onDelete(item)}>Hapus dari daftar & spreadsheet</button>
           )}
         </div>
       )}

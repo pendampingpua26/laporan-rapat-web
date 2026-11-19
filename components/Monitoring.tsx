@@ -1,9 +1,10 @@
 'use client';
 import { useMemo, useState } from 'react';
-import type { Item, ListData } from '@/lib/types';
+import type { Item, ListData, Plan } from '@/lib/types';
 import { FILTERS, type Status } from '@/lib/status';
 import { monthLabel } from '@/lib/format';
 import Card from './Card';
+import Reminders from './Reminders';
 
 type Props = {
   data: ListData | null;
@@ -13,9 +14,10 @@ type Props = {
   onStatus: (item: Item, to: Status) => void;
   onForm: (item: Item, mode: 'create' | 'edit') => void;
   onDelete: (item: Item) => void;
+  onPlan: (p: Plan) => void;
 };
 
-export default function Monitoring({ data, loading, error, onReload, onStatus, onForm, onDelete }: Props) {
+export default function Monitoring({ data, loading, error, onReload, onStatus, onForm, onDelete, onPlan }: Props) {
   const [filter, setFilter] = useState('all');
   const [month, setMonth] = useState('all');
   const [q, setQ] = useState('');
@@ -64,6 +66,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
       </div>
 
       {error && <div className="banner">{error}</div>}
+      <Reminders plans={data?.plans || []} onCreate={onPlan} />
       {(data?.warnings || []).map((w, i) => (
         <div className="banner" key={i}>{w}</div>
       ))}

@@ -8,6 +8,7 @@ type Props = {
   mode: 'create' | 'edit';
   editKey?: string;
   monRowId?: number;
+  planId?: string;
   initial: Record<string, string>;
   draftId: string;
   onClose: () => void;
@@ -19,7 +20,7 @@ const EMPTY: Files = { undangan: [], rapat: [], lainnya: [] };
 const byName = (a: FileRef, b: FileRef) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
 const TOTAL = STEPS.length + 1;
 
-export default function Wizard({ mode, editKey, monRowId, initial, draftId, onClose, onSaved }: Props) {
+export default function Wizard({ mode, editKey, monRowId, planId, initial, draftId, onClose, onSaved }: Props) {
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<Record<string, string>>(initial);
   const [files, setFiles] = useState<Files>(EMPTY);
@@ -41,7 +42,9 @@ export default function Wizard({ mode, editKey, monRowId, initial, draftId, onCl
         try {
           const r = await rpc<{ fields: Record<string, string>; photos: Files }>('getReport', { key: editKey });
           if (!alive) return;
-          setValues({ ...initial, ...r.fields });
+          const f = { ...initial, ...r.fields };
+          if (!String(f['Judul Laporan'] || '').trim()) f['Judul Laporan'] = f['Acara'] || ''; // laporan lama belum punya judul
+          setValues(f);
           setFiles({ ...EMPTY, ...r.photos });
         } catch (e: any) {
           if (alive) setLoadErr(e.message);
@@ -105,6 +108,7 @@ export default function Wizard({ mode, editKey, monRowId, initial, draftId, onCl
       scrollToFirst(e);
       return;
     }
+    if (step === 0 && !String(values['Judul Laporan'] || '').trim()) set('Judul Laporan', values['Acara'] || '');
     setStep(step + 1);
     window.scrollTo({ top: 0 });
   }
@@ -150,6 +154,7 @@ export default function Wizard({ mode, editKey, monRowId, initial, draftId, onCl
       const r = await rpc<SaveResult>('save', {
         key: mode === 'edit' ? editKey : undefined,
         monRowId,
+        planId,
         fields: values,
         photos: {
           undangan: [...files.undangan].sort(byName).map((f) => f.id),
