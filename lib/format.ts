@@ -7,3 +7,9 @@ export function fmtDate(iso: string): string {
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   return `${HARI[d.getDay()]}, ${Number(m[3])} ${BULAN[Number(m[2]) - 1]} ${m[1]}`;
 }
+
+// "2026-11" -> "November 2026"
+export function monthLabel(ym: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(ym || '');
+  return m ? `${BULAN[Number(m[2]) - 1]} ${m[1]}` : ym;
+}

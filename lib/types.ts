@@ -10,12 +10,14 @@ export type Item = {
   status: Status;
   linkLaporan: string;
   linkWa: string;
+  linkDocs: string;
   key: string;
 };
 
 export type ListData = {
   items: Item[];
-  folders: { undangan: string; rapat: string; lainnya: string; gdocs: string; pdf: string };
+  warnings?: string[];
+  folders: { undangan: string; rapat: string; lainnya: string; laporan: string };
 };
 
 export type FileRef = { id: string; name: string };

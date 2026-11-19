@@ -15,6 +15,8 @@ type Props = {
 };
 
 const EMPTY: Files = { undangan: [], rapat: [], lainnya: [] };
+// urutan foto undangan mengikuti nama file (01_, 02_, ...)
+const byName = (a: FileRef, b: FileRef) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
 const TOTAL = STEPS.length + 1;
 
 export default function Wizard({ mode, editKey, monRowId, initial, draftId, onClose, onSaved }: Props) {
@@ -115,7 +117,11 @@ export default function Wizard({ mode, editKey, monRowId, initial, draftId, onCl
       try {
         const prepared = await prepareFile(file);
         const r = await rpc<FileRef>('uploadFile', { kind, ...prepared });
-        setFiles((p) => ({ ...p, [kind]: [...p[kind], { id: r.id, name: r.name }] }));
+        setFiles((p) => {
+          const arr = [...p[kind], { id: r.id, name: r.name }];
+          if (kind === 'undangan') arr.sort(byName);
+          return { ...p, [kind]: arr };
+        });
       } catch (e: any) {
         setErrors((p) => ({ ...p, ['file-' + kind]: e.message }));
         break;
@@ -146,7 +152,7 @@ export default function Wizard({ mode, editKey, monRowId, initial, draftId, onCl
         monRowId,
         fields: values,
         photos: {
-          undangan: files.undangan.map((f) => f.id),
+          undangan: [...files.undangan].sort(byName).map((f) => f.id),
           rapat: files.rapat.map((f) => f.id),
           lainnya: files.lainnya.map((f) => f.id),
         },
@@ -172,9 +178,18 @@ export default function Wizard({ mode, editKey, monRowId, initial, draftId, onCl
           {f.label}
           <span className="req" aria-hidden>*</span>
         </label>
-        <div className="hint">{f.hint}</div>
+        {f.hint && <div className="hint">{f.hint}</div>}
         {f.type === 'textarea' ? (
           <textarea {...common} rows={f.rows || 4} />
+        ) : f.type === 'select' ? (
+          <select {...common}>
+            <option value="">— Pilih —</option>
+            {(f.options || [])
+              .concat(values[f.name] && !(f.options || []).includes(values[f.name]) ? [values[f.name]] : [])
+              .map((o) => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+          </select>
         ) : (
           <input {...common} type={f.type === 'date' ? 'date' : 'text'} placeholder={f.placeholder} />
         )}
@@ -231,7 +246,7 @@ export default function Wizard({ mode, editKey, monRowId, initial, draftId, onCl
                 {f.label}
                 {f.required && <span className="req" aria-hidden>*</span>}
               </label>
-              <div className="hint">{f.hint}</div>
+              {f.hint && <div className="hint">{f.hint}</div>}
               <label className="btn ghost filebtn" style={{ fontWeight: 600 }}>
                 {f.kind === 'lainnya' ? 'Pilih file' : 'Ambil / pilih foto'}
                 <input type="file" accept={f.accept} multiple onChange={(e) => { addFiles(f.kind, e.target.files); e.target.value = ''; }} />

@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Laporan Rapat',
+  title: 'Monitoring Laporan Rapat Kesra',
   description: 'Buat dan pantau laporan rapat',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'Laporan Rapat', statusBarStyle: 'default' },

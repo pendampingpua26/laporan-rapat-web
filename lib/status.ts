@@ -25,15 +25,15 @@ export const STATUS_META: Record<Status, { icon: string; tone: Tone; stage: numb
 
 export const STAGES = ['Dibuat', 'Kasubkel', 'Kabid', 'Arsip'];
 
-// Tombol besar untuk langkah berikutnya yang paling umum
+// Tombol besar di kartu hanya untuk membuka form. Status diubah lewat satu pilihan di kartu.
 export type NextAction = { label: string; to?: Status; form?: 'create' | 'edit' } | null;
 export const NEXT: Record<Status, NextAction> = {
   'Belum Dibuat': { label: 'Buat laporan', form: 'create' },
-  'Laporan Dibuat': { label: 'ACC Kasubkel', to: 'ACC Kasubkel' },
+  'Laporan Dibuat': null,
   'Revisi Kasubkel': { label: 'Edit laporan', form: 'edit' },
-  'ACC Kasubkel': { label: 'ACC Kabid', to: 'ACC Kabid' },
+  'ACC Kasubkel': null,
   'Revisi Kabid': { label: 'Edit laporan', form: 'edit' },
-  'ACC Kabid': { label: 'Arsipkan', to: 'Arsip' },
+  'ACC Kabid': null,
   Arsip: null,
   SPJ: null,
 };

@@ -17,12 +17,6 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
   const hasReport = !!item.linkLaporan;
   const canEdit = !!item.key; // laporan dari aplikasi punya ID; laporan Google Form lama tidak
 
-  function primary() {
-    if (!next) return;
-    if (next.form) onForm(item, next.form);
-    else if (next.to) onStatus(item, next.to);
-  }
-
   return (
     <div className="card">
       <h3>{item.acara}</h3>
@@ -45,9 +39,19 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
         })}
       </div>
 
+      {/* Ubah status: satu langkah, semua status (termasuk Revisi) langsung tersedia */}
+      <div className="field" style={{ margin: '0 0 12px' }}>
+        <label htmlFor={'st' + item.rowId}>Ubah status</label>
+        <select id={'st' + item.rowId} value={item.status} onChange={(e) => onStatus(item, e.target.value as Status)}>
+          {STATUSES.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="row">
-        {next && (
-          <button className="grow" onClick={primary}>
+        {next?.form && (
+          <button className="grow" onClick={() => onForm(item, next.form!)}>
             {next.label}
           </button>
         )}
@@ -58,16 +62,11 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
 
       {open && (
         <div className="more">
-          <div className="field" style={{ margin: 0 }}>
-            <label htmlFor={'st' + item.rowId}>Ubah status</label>
-            <select id={'st' + item.rowId} value={item.status} onChange={(e) => onStatus(item, e.target.value as Status)}>
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-          {item.status === 'Belum Dibuat' && !hasReport && (
+          {item.status !== 'Belum Dibuat' && !hasReport && (
             <button className="ghost" onClick={() => onForm(item, 'create')}>Buat laporan</button>
+          )}
+          {item.linkDocs && (
+            <a className="btn ghost" href={item.linkDocs} target="_blank" rel="noreferrer">Buka Google Docs (edit langsung)</a>
           )}
           {hasReport && (
             <a className="btn ghost" href={item.linkLaporan} target="_blank" rel="noreferrer">Buka PDF</a>
@@ -75,7 +74,7 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
           {item.linkWa && (
             <a className="btn ghost" href={item.linkWa} target="_blank" rel="noreferrer">Kirim ke WhatsApp</a>
           )}
-          {hasReport && canEdit && (
+          {hasReport && canEdit && !next?.form && (
             <button className="ghost" onClick={() => onForm(item, 'edit')}>Edit laporan</button>
           )}
           {hasReport && !canEdit && (
