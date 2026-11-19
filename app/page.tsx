@@ -130,7 +130,6 @@ export default function Home() {
   const initial: Record<string, string> = {};
   if (target?.plan) {
     initial['Acara'] = target.plan.rapat;
-    initial['Judul Laporan'] = target.plan.rapat;
     if (target.plan.tanggalIso) initial['Hari/Tanggal Pelaksanaan Rapat'] = target.plan.tanggalIso;
   }
   if (target?.item) {
