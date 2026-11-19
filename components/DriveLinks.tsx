@@ -7,14 +7,13 @@ export default function DriveLinks({ data, loading }: { data: ListData | null; l
         { t: 'Foto Undangan', d: 'Semua foto undangan rapat', u: data.folders.undangan },
         { t: 'Foto Pelaksanaan Rapat', d: 'Semua foto saat rapat berlangsung', u: data.folders.rapat },
         { t: 'Dokumen Lainnya', d: 'Materi dan lampiran lain', u: data.folders.lainnya },
-        { t: 'Laporan (Google Docs)', d: 'Hasil laporan format Google Docs', u: data.folders.gdocs },
-        { t: 'Laporan (PDF)', d: 'Hasil laporan format PDF', u: data.folders.pdf },
-      ]
+        { t: 'Laporan (Docs dan PDF)', d: 'Hasil laporan format Google Docs dan PDF', u: data.folders.laporan },
+      ].filter((r) => !!r.u)
     : [];
   return (
     <div>
       <h1>Drive</h1>
-      <p className="sub">Pintasan ke lima folder tempat file laporan disimpan.</p>
+      <p className="sub">Pintasan ke empat folder tempat file laporan disimpan.</p>
       {loading && !data && <div className="center">Memuat…</div>}
       {rows.map((r) => (
         <div className="card" key={r.t}>
