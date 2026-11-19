@@ -19,6 +19,7 @@ export const STEPS: { title: string; fields: FieldDef[] }[] = [
     title: '1. Info rapat',
     fields: [
       { name: 'Acara', label: 'Acara', type: 'text', hint: 'Nama rapat' },
+      { name: 'Judul Laporan', label: 'Judul Laporan', type: 'text', hint: 'Judul yang tertulis di laporan dan monitoring. Isi sendiri, boleh sama dengan nama rapat.' },
       { name: 'Hari/Tanggal Pelaksanaan Rapat', label: 'Hari/Tanggal Pelaksanaan', type: 'date', hint: '' },
       { name: 'Waktu Rapat', label: 'Waktu Rapat', type: 'text', placeholder: '14.00 WIB s.d selesai', hint: 'Contoh: 14.00 WIB s.d selesai' },
       { name: 'Tempat Rapat', label: 'Tempat Rapat', type: 'text', hint: 'Contoh: Ruang Rapat Siera, Gedung Dinas Teknis Abdul Muis' },
