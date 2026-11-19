@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-const ALLOWED = new Set(['list', 'getReport', 'uploadFile', 'save', 'setStatus', 'remove']);
+const ALLOWED = new Set(['list', 'getReport', 'uploadFile', 'save', 'setStatus', 'remove', 'planSave', 'planRemove']);
 
 export async function POST(req: NextRequest) {
   if (!(await isLoggedIn())) {
