@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import type { Item, ListData, Plan } from '@/lib/types';
 import { FILTERS, type Status } from '@/lib/status';
 import { fmtDate, monthLabel } from '@/lib/format';
-import { todayIso } from '@/lib/plan';
+import { planState, todayIso } from '@/lib/plan';
 import Card from './Card';
 import Reminders from './Reminders';
 import Icon from './Icon';
@@ -72,6 +72,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
       .sort((a, b) => (b.tanggalIso || '').localeCompare(a.tanggalIso || '') || b.rowId - a.rowId);
   }, [inMonth, filter, q, picByLink]);
 
+  const hasHero = (data?.plans || []).some((p) => ['segera', 'terlewat'].includes(planState(p).state));
   const activeLabel = TILES.find((t) => t.id === filter)?.label;
 
   return (
@@ -91,6 +92,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
         <div className="banner" key={i}>{w}</div>
       ))}
 
+      <div className={'bento' + (hasHero ? ' has-hero' : '')}>
       <Reminders plans={data?.plans || []} onCreate={onPlan} />
 
       <div className="tiles">
@@ -100,6 +102,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
             <span className="l">{t.label}</span>
           </button>
         ))}
+      </div>
       </div>
       {activeLabel && (
         <div className="activefilter">

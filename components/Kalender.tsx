@@ -110,6 +110,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
       </div>
       <p className="sub">Ketuk tanggal untuk melihat rapat dan laporannya. {monthItems + monthPending} rapat di {monthLabel(ym)}.</p>
 
+      <div className="calwrap">
       <div className="cal">
         <div className="calhead">
           <button className="ghost" onClick={() => go(-1)} aria-label="Bulan sebelumnya"><Icon name="left" /></button>
@@ -149,6 +150,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
         </div>
       </div>
 
+      <div>
       <div className="dayhead">
         <h2>{fmtDate(sel)}</h2>
         {!draft && (
@@ -204,6 +206,9 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
         {dayItems.map((it) => (
           <Card key={it.rowId} item={it} pic={picByLink[it.linkLaporan]} onStatus={onStatus} onSpj={onSpj} onForm={onForm} onDelete={onDelete} />
         ))}
+      </div>
+
+      </div>
       </div>
 
       {late.length > 0 && (
