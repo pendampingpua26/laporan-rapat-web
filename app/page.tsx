@@ -4,12 +4,13 @@ import Login from '@/components/Login';
 import Monitoring from '@/components/Monitoring';
 import Wizard from '@/components/Wizard';
 import DriveLinks from '@/components/DriveLinks';
-import Jadwal from '@/components/Jadwal';
+import Kalender from '@/components/Kalender';
+import Icon from '@/components/Icon';
 import { rpc } from '@/lib/client';
 import type { Item, ListData, Plan } from '@/lib/types';
 import type { Status } from '@/lib/status';
 
-type View = 'monitor' | 'jadwal' | 'form' | 'drive';
+type View = 'monitor' | 'kalender' | 'form' | 'drive';
 type FormTarget = { mode: 'create' | 'edit'; item?: Item; plan?: Plan; draftId: string };
 type Toast = { text: string; bad?: boolean; undo?: () => void } | null;
 
@@ -172,8 +173,19 @@ export default function Home() {
             onSaved={load}
           />
         )}
-        {view === 'jadwal' && (
-          <Jadwal plans={data?.plans || []} loading={loading} onReload={load} onCreate={openFromPlan} say={(text, bad) => say({ text, bad })} />
+        {view === 'kalender' && (
+          <Kalender
+            items={data?.items || []}
+            plans={data?.plans || []}
+            loading={loading}
+            onReload={load}
+            onStatus={changeStatus}
+            onSpj={changeSpj}
+            onForm={openForm}
+            onDelete={del}
+            onPlan={openFromPlan}
+            say={(text, bad) => say({ text, bad })}
+          />
         )}
         {view === 'drive' && <DriveLinks data={data} loading={loading} />}
         {view === 'monitor' && (
@@ -191,17 +203,18 @@ export default function Home() {
       )}
 
       <nav className="nav" aria-label="Menu utama">
+        <div className="brand"><b>Kesra Journal</b><span>Monitoring laporan rapat</span></div>
         <button className={view === 'monitor' ? 'on' : ''} onClick={() => { setView('monitor'); setTarget(null); }}>
-          <span className="ic" aria-hidden>📋</span>Monitoring
+          <Icon name="list" />Monitoring
         </button>
-        <button className={view === 'jadwal' ? 'on' : ''} onClick={() => { setView('jadwal'); setTarget(null); }}>
-          <span className="ic" aria-hidden>🗓️</span>Jadwal
+        <button className={view === 'kalender' ? 'on' : ''} onClick={() => { setView('kalender'); setTarget(null); }}>
+          <Icon name="cal" />Kalender
         </button>
         <button className={view === 'form' ? 'on' : ''} onClick={newBlank}>
-          <span className="ic" aria-hidden>➕</span>Buat laporan
+          <Icon name="plus" />Buat laporan
         </button>
         <button className={view === 'drive' ? 'on' : ''} onClick={() => { setView('drive'); setTarget(null); }}>
-          <span className="ic" aria-hidden>📁</span>Drive
+          <Icon name="folder" />Drive
         </button>
       </nav>
     </>
