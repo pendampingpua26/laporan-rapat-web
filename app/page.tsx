@@ -96,6 +96,20 @@ export default function Home() {
     }
   }
 
+  async function changePic(item: Item, pic: string) {
+    const patch = (v: string) =>
+      setData((d) => (d ? { ...d, items: d.items.map((i) => (i.rowId === item.rowId ? { ...i, pic: v } : i)) } : d));
+    const before = item.pic;
+    patch(pic);
+    try {
+      await rpc('setPic', { rowId: item.rowId, pic });
+      say({ text: 'PIC disimpan.' });
+    } catch (e: any) {
+      patch(before);
+      say({ text: 'PIC gagal disimpan: ' + e.message, bad: true }, 9000);
+    }
+  }
+
   function openForm(item: Item, mode: 'create' | 'edit') {
     setTarget({ mode, item, draftId: mode === 'edit' ? 'edit-' + item.key : 'mon-' + item.rowId });
     setView('form');
@@ -158,7 +172,7 @@ export default function Home() {
     <div className="shell">
       <div className="wrap">
         {view === 'monitor' && (
-          <Monitoring data={data} loading={loading} error={error} onReload={load} onStatus={changeStatus} onSpj={changeSpj} onForm={openForm} onDelete={del} onPlan={openFromPlan} />
+          <Monitoring data={data} loading={loading} error={error} onReload={load} onStatus={changeStatus} onSpj={changeSpj} onPic={changePic} onForm={openForm} onDelete={del} onPlan={openFromPlan} />
         )}
         {view === 'form' && target && (
           <div className="narrow">
@@ -183,6 +197,7 @@ export default function Home() {
             onReload={load}
             onStatus={changeStatus}
             onSpj={changeSpj}
+            onPic={changePic}
             onForm={openForm}
             onDelete={del}
             onPlan={openFromPlan}
