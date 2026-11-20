@@ -13,6 +13,7 @@ export type Item = {
   linkDocs: string;
   key: string;
   revisi: number;
+  spj: boolean;
   riwayat: string;
 };
 

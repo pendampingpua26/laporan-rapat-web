@@ -6,7 +6,6 @@ export const STATUSES = [
   'Revisi Kabid',
   'ACC Kabid',
   'Arsip',
-  'SPJ',
 ] as const;
 export type Status = (typeof STATUSES)[number];
 
@@ -20,7 +19,6 @@ export const STATUS_META: Record<Status, { icon: string; tone: Tone; stage: numb
   'Revisi Kabid': { icon: '✎', tone: 'act', stage: 2 },
   'ACC Kabid': { icon: '✔', tone: 'info', stage: 3 },
   Arsip: { icon: '📁', tone: 'ok', stage: 4 },
-  SPJ: { icon: '💰', tone: 'ok', stage: 4 },
 };
 
 export const STAGES = ['Dibuat', 'Kasubkel', 'Kabid', 'Arsip'];
@@ -35,13 +33,14 @@ export const NEXT: Record<Status, NextAction> = {
   'Revisi Kabid': { label: 'Edit laporan', form: 'edit' },
   'ACC Kabid': null,
   Arsip: null,
-  SPJ: null,
 };
 
-export const FILTERS: { id: string; label: string; test: (s: Status) => boolean }[] = [
+// SPJ bukan status urut, melainkan centang terpisah (item.spj) yang bisa diberi kapan saja.
+export const FILTERS: { id: string; label: string; test: (i: { status: Status; spj: boolean }) => boolean }[] = [
   { id: 'all', label: 'Semua', test: () => true },
-  { id: 'act', label: 'Perlu tindakan', test: (s) => ['Belum Dibuat', 'Revisi Kasubkel', 'Revisi Kabid', 'ACC Kabid'].includes(s) },
-  { id: 'wait', label: 'Menunggu ACC', test: (s) => ['Laporan Dibuat', 'ACC Kasubkel'].includes(s) },
-  { id: 'arsip', label: 'Arsip', test: (s) => s === 'Arsip' },
-  { id: 'spj', label: 'SPJ', test: (s) => s === 'SPJ' },
+  { id: 'act', label: 'Perlu tindakan', test: (i) => ['Belum Dibuat', 'Revisi Kasubkel', 'Revisi Kabid', 'ACC Kabid'].includes(i.status) },
+  { id: 'wait', label: 'Menunggu ACC', test: (i) => ['Laporan Dibuat', 'ACC Kasubkel'].includes(i.status) },
+  { id: 'arsip', label: 'Arsip', test: (i) => i.status === 'Arsip' },
+  { id: 'spj', label: 'SPJ ✓', test: (i) => i.spj },
+  { id: 'nospj', label: 'Belum SPJ', test: (i) => !i.spj },
 ];
