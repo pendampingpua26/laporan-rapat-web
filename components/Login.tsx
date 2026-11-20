@@ -32,8 +32,9 @@ export default function Login({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="wrap">
-      <h1>Laporan Rapat</h1>
-      <p className="sub">Masukkan PIN untuk membuka aplikasi.</p>
+      <div className="eyebrow">✦ Subkelompok Kesejahteraan Rakyat &amp; Perekonomian</div>
+      <h1>Kesra Journal</h1>
+      <p className="sub">Masukkan PIN untuk membuka monitoring laporan rapat.</p>
       <form onSubmit={submit} className="card">
         <div className={'field' + (err ? ' bad' : '')}>
           <label htmlFor="pin">PIN</label>

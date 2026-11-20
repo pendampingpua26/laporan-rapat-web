@@ -4,8 +4,9 @@ import type { Plan } from '@/lib/types';
 import { dayLabel, planState } from '@/lib/plan';
 import { REMINDER_DAYS } from '@/lib/config';
 import { fmtDate } from '@/lib/format';
+import Icon from './Icon';
 
-// Daftar rapat yang laporannya harus segera dibuat (hari rapat sampai H+REMINDER_DAYS), lengkap dengan nama PIC.
+// Kartu utama: rapat yang paling lama menunggu laporan (H sampai H+REMINDER_DAYS), lengkap dengan PIC.
 export default function Reminders({ plans, onCreate }: { plans: Plan[]; onCreate: (p: Plan) => void }) {
   const due = useMemo(
     () =>
@@ -17,20 +18,38 @@ export default function Reminders({ plans, onCreate }: { plans: Plan[]; onCreate
   );
   const late = useMemo(() => plans.filter((p) => planState(p).state === 'terlewat').length, [plans]);
   if (!due.length && !late) return null;
+  const [top, ...rest] = due;
   return (
-    <div className="remind" role="region" aria-label="Pengingat laporan">
-      <h2>🔔 Laporan yang harus segera dibuat</h2>
-      {due.map(({ p, s }) => (
-        <div className="it" key={p.id}>
-          <div className="tx">
-            <b>{p.rapat}</b>
-            <span className="meta">PIC: {p.pic} · {fmtDate(p.tanggalIso)}</span>
-            <div><span className="tag segera">{dayLabel(s.days)}</span><span className="meta">batas pengingat H+{REMINDER_DAYS}</span></div>
+    <div className="hero" role="region" aria-label="Pengingat laporan">
+      {top && (
+        <>
+          <div>
+            <span className="pill"><Icon name="bell" /> Laporan yang harus segera dibuat</span>
+            <span className="pill">{dayLabel(top.s.days)} · batas pengingat H+{REMINDER_DAYS}</span>
           </div>
-          <button onClick={() => onCreate(p)}>Buat</button>
+          <h3>{top.p.rapat}</h3>
+          <div className="meta">PIC: <b>{top.p.pic}</b> · {fmtDate(top.p.tanggalIso)}</div>
+          <button className="go" onClick={() => onCreate(top.p)}>Buat Laporan</button>
+        </>
+      )}
+      {rest.length > 0 && (
+        <div className="hero-more">
+          {rest.map(({ p, s }) => (
+            <div className="it" key={p.id}>
+              <div style={{ minWidth: 0 }}>
+                <b>{p.rapat}</b>
+                <span className="meta">PIC: {p.pic} · {dayLabel(s.days)}</span>
+              </div>
+              <button className="ghost" onClick={() => onCreate(p)}>Buat</button>
+            </div>
+          ))}
         </div>
-      ))}
-      {late > 0 && <div className="meta" style={{ marginTop: 6 }}>Ada {late} rapat lewat H+{REMINDER_DAYS} yang belum ada laporannya. Lihat menu Jadwal.</div>}
+      )}
+      {late > 0 && (
+        <div className="meta" style={{ marginTop: 10 }}>
+          Ada {late} rapat lewat H+{REMINDER_DAYS} yang laporannya belum dibuat. Lihat di menu Kalender.
+        </div>
+      )}
     </div>
   );
 }

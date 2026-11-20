@@ -9,9 +9,10 @@ type Props = {
   onSpj: (item: Item, on: boolean) => void;
   onForm: (item: Item, mode: 'create' | 'edit') => void;
   onDelete: (item: Item) => void;
+  pic?: string;
 };
 
-export default function Card({ item, onStatus, onSpj, onForm, onDelete }: Props) {
+export default function Card({ item, onStatus, onSpj, onForm, onDelete, pic }: Props) {
   const [open, setOpen] = useState(false);
   const meta = STATUS_META[item.status];
   const next = NEXT[item.status];
@@ -24,13 +25,13 @@ export default function Card({ item, onStatus, onSpj, onForm, onDelete }: Props)
       <h3>{item.acara}</h3>
       <div className="meta">{item.tanggalText || 'Tanggal belum diisi'}</div>
       {item.penyelenggara && <div className="meta">{item.penyelenggara}</div>}
+      {pic && <div className="meta">PIC: <b>{pic}</b></div>}
 
       <div className="row" style={{ gap: 8 }}>
         <div className={'badge ' + meta.tone}>
           <span aria-hidden>{meta.icon}</span> {item.status}
         </div>
         {item.spj && <div className="badge ok"><span aria-hidden>💰</span> SPJ ✓</div>}
-        {!item.spj && item.status === 'Arsip' && <div className="badge wait">Belum SPJ</div>}
       </div>
       {item.revisi > 0 && <div className="meta">Sudah direvisi {item.revisi}×</div>}
 

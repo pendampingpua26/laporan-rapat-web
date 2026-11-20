@@ -2,9 +2,11 @@
 import { useMemo, useState } from 'react';
 import type { Item, ListData, Plan } from '@/lib/types';
 import { FILTERS, type Status } from '@/lib/status';
-import { monthLabel } from '@/lib/format';
+import { fmtDate, monthLabel } from '@/lib/format';
+import { todayIso } from '@/lib/plan';
 import Card from './Card';
 import Reminders from './Reminders';
+import Icon from './Icon';
 
 type Props = {
   data: ListData | null;
@@ -18,14 +20,25 @@ type Props = {
   onPlan: (p: Plan) => void;
 };
 
+const TILES: { id: string; label: string; cls: string }[] = [
+  { id: 'act', label: 'Perlu tindakan', cls: 't-act' },
+  { id: 'wait', label: 'Menunggu ACC', cls: 't-wait' },
+  { id: 'arsip', label: 'Arsip selesai', cls: 't-ok' },
+  { id: 'spj', label: 'SPJ lengkap ✓', cls: 't-spj' },
+];
+
 export default function Monitoring({ data, loading, error, onReload, onStatus, onSpj, onForm, onDelete, onPlan }: Props) {
   const [filter, setFilter] = useState('all');
   const [month, setMonth] = useState('all');
   const [q, setQ] = useState('');
 
   const items = data?.items || [];
+  const picByLink = useMemo(() => {
+    const m: Record<string, string> = {};
+    (data?.plans || []).forEach((p) => p.linkLaporan && (m[p.linkLaporan] = p.pic));
+    return m;
+  }, [data]);
 
-  // daftar bulan dari tanggal rapat, yang terbaru di atas
   const months = useMemo(() => {
     const s = new Set<string>();
     items.forEach((i) => i.tanggalIso && s.add(i.tanggalIso.slice(0, 7)));
@@ -54,54 +67,72 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
     const needle = q.trim().toLowerCase();
     return inMonth
       .filter((i) => f.test(i))
-      .filter((i) => !needle || (i.acara + ' ' + i.penyelenggara + ' ' + i.tempat).toLowerCase().includes(needle))
+      .filter((i) => !needle || (i.acara + ' ' + i.penyelenggara + ' ' + i.tempat + ' ' + (picByLink[i.linkLaporan] || '')).toLowerCase().includes(needle))
       // tanggal rapat terbaru di atas; yang tanpa tanggal di bawah
       .sort((a, b) => (b.tanggalIso || '').localeCompare(a.tanggalIso || '') || b.rowId - a.rowId);
-  }, [inMonth, filter, q]);
+  }, [inMonth, filter, q, picByLink]);
+
+  const activeLabel = TILES.find((t) => t.id === filter)?.label;
 
   return (
     <div>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h1>Monitoring Laporan Rapat Kesra</h1>
-        <button className="ghost" onClick={onReload} disabled={loading}>{loading ? 'Memuat…' : 'Muat ulang'}</button>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="eyebrow">✦ {fmtDate(todayIso())}</div>
+          <h1>Monitoring Laporan Rapat Kesra</h1>
+        </div>
+        <button className="ghost" onClick={onReload} disabled={loading} aria-label="Muat ulang">
+          <Icon name="refresh" /> {loading ? 'Memuat…' : 'Muat ulang'}
+        </button>
       </div>
 
       {error && <div className="banner">{error}</div>}
-      <Reminders plans={data?.plans || []} onCreate={onPlan} />
       {(data?.warnings || []).map((w, i) => (
         <div className="banner" key={i}>{w}</div>
       ))}
 
-      <div className="field">
-        <label htmlFor="bulan">Bulan</label>
-        <select id="bulan" value={month} onChange={(e) => setMonth(e.target.value)}>
-          <option value="all">Semua bulan</option>
-          {months.map((m) => (
-            <option key={m} value={m}>{monthLabel(m)}</option>
-          ))}
-          {hasNoDate && <option value="none">Tanpa tanggal</option>}
-        </select>
-      </div>
+      <Reminders plans={data?.plans || []} onCreate={onPlan} />
 
-      <div className="chips" role="tablist">
-        {FILTERS.map((f) => (
-          <button key={f.id} className={'chip' + (filter === f.id ? ' on' : '')} onClick={() => setFilter(f.id)}>
-            {f.label} ({counts[f.id] ?? 0})
+      <div className="tiles">
+        {TILES.map((t) => (
+          <button key={t.id} className={'tile ' + t.cls + (filter === t.id ? ' on' : '')} onClick={() => setFilter(filter === t.id ? 'all' : t.id)} aria-pressed={filter === t.id}>
+            <span className="n">{counts[t.id] ?? 0}</span>
+            <span className="l">{t.label}</span>
           </button>
         ))}
       </div>
+      {activeLabel && (
+        <div className="activefilter">
+          <span>Menampilkan: {activeLabel}</span>
+          <button className="ghost" onClick={() => setFilter('all')}>Tampilkan semua ({counts.all ?? 0})</button>
+        </div>
+      )}
 
-      <div className="field">
-        <label htmlFor="q" className="hint" style={{ fontWeight: 400 }}>Cari rapat</label>
-        <input id="q" type="search" placeholder="Ketik nama acara atau tempat" value={q} onChange={(e) => setQ(e.target.value)} />
+      <div className="filters">
+        <div className="field">
+          <label htmlFor="bulan">Bulan</label>
+          <select id="bulan" value={month} onChange={(e) => setMonth(e.target.value)}>
+            <option value="all">Semua bulan</option>
+            {months.map((m) => (
+              <option key={m} value={m}>{monthLabel(m)}</option>
+            ))}
+            {hasNoDate && <option value="none">Tanpa tanggal</option>}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="q">Cari rapat</label>
+          <input id="q" type="search" placeholder="Nama acara, tempat, atau PIC" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
       </div>
 
       {loading && !data && <div className="center">Memuat data rapat…</div>}
       {!loading && data && shown.length === 0 && <div className="center">Tidak ada rapat di daftar ini.</div>}
 
-      {shown.map((it) => (
-        <Card key={it.rowId} item={it} onStatus={onStatus} onSpj={onSpj} onForm={onForm} onDelete={onDelete} />
-      ))}
+      <div className="cards">
+        {shown.map((it) => (
+          <Card key={it.rowId} item={it} pic={picByLink[it.linkLaporan]} onStatus={onStatus} onSpj={onSpj} onForm={onForm} onDelete={onDelete} />
+        ))}
+      </div>
     </div>
   );
 }
