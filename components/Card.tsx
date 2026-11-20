@@ -7,13 +7,16 @@ type Props = {
   item: Item;
   onStatus: (item: Item, to: Status) => void;
   onSpj: (item: Item, on: boolean) => void;
+  onPic: (item: Item, pic: string) => void;
   onForm: (item: Item, mode: 'create' | 'edit') => void;
   onDelete: (item: Item) => void;
   pic?: string;
 };
 
-export default function Card({ item, onStatus, onSpj, onForm, onDelete, pic }: Props) {
+export default function Card({ item, onStatus, onSpj, onPic, onForm, onDelete, pic }: Props) {
   const [open, setOpen] = useState(false);
+  const shownPic = item.pic || pic || '';
+  const [picDraft, setPicDraft] = useState(shownPic);
   const meta = STATUS_META[item.status];
   const next = NEXT[item.status];
   const hasReport = !!item.linkLaporan;
@@ -25,7 +28,7 @@ export default function Card({ item, onStatus, onSpj, onForm, onDelete, pic }: P
       <h3>{item.acara}</h3>
       <div className="meta">{item.tanggalText || 'Tanggal belum diisi'}</div>
       {item.penyelenggara && <div className="meta">{item.penyelenggara}</div>}
-      {pic && <div className="meta">PIC: <b>{pic}</b></div>}
+      <div className="meta">PIC: {shownPic ? <b>{shownPic}</b> : <i>belum diisi</i>}</div>
 
       <div className="row" style={{ gap: 8 }}>
         <div className={'badge ' + meta.tone}>
@@ -75,6 +78,13 @@ export default function Card({ item, onStatus, onSpj, onForm, onDelete, pic }: P
 
       {open && (
         <div className="more">
+          <div className="field" style={{ margin: 0 }}>
+            <label htmlFor={'pic' + item.rowId}>PIC (pembuat laporan)</label>
+            <div className="row">
+              <input id={'pic' + item.rowId} type="text" value={picDraft} onChange={(e) => setPicDraft(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
+              <button className="ghost" disabled={picDraft.trim() === shownPic} onClick={() => onPic(item, picDraft.trim())}>Simpan</button>
+            </div>
+          </div>
           {item.status !== 'Belum Dibuat' && !hasReport && (
             <button className="ghost" onClick={() => onForm(item, 'create')}>Buat laporan</button>
           )}

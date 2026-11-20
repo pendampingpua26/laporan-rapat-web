@@ -16,6 +16,7 @@ type Props = {
   onReload: () => void;
   onStatus: (item: Item, to: Status) => void;
   onSpj: (item: Item, on: boolean) => void;
+  onPic: (item: Item, pic: string) => void;
   onForm: (item: Item, mode: 'create' | 'edit') => void;
   onDelete: (item: Item) => void;
   onPlan: (p: Plan) => void;
@@ -25,7 +26,7 @@ type Props = {
 type Draft = { id: string; tanggalIso: string; rapat: string; pic: string };
 const WD = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
-export default function Kalender({ items, plans, loading, onReload, onStatus, onSpj, onForm, onDelete, onPlan, say }: Props) {
+export default function Kalender({ items, plans, loading, onReload, onStatus, onSpj, onPic, onForm, onDelete, onPlan, say }: Props) {
   const today = todayIso();
   const [y, setY] = useState(Number(today.slice(0, 4)));
   const [m0, setM0] = useState(Number(today.slice(5, 7)) - 1);
@@ -204,7 +205,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
 
       <div className="cards">
         {dayItems.map((it) => (
-          <Card key={it.rowId} item={it} pic={picByLink[it.linkLaporan]} onStatus={onStatus} onSpj={onSpj} onForm={onForm} onDelete={onDelete} />
+          <Card key={it.rowId} item={it} pic={picByLink[it.linkLaporan]} onStatus={onStatus} onSpj={onSpj} onPic={onPic} onForm={onForm} onDelete={onDelete} />
         ))}
       </div>
 

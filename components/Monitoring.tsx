@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import type { Item, ListData, Plan } from '@/lib/types';
 import { FILTERS, type Status } from '@/lib/status';
 import { fmtDate, monthLabel } from '@/lib/format';
-import { planState, todayIso } from '@/lib/plan';
+import { todayIso } from '@/lib/plan';
 import Card from './Card';
 import Reminders from './Reminders';
 import Icon from './Icon';
@@ -15,19 +15,14 @@ type Props = {
   onReload: () => void;
   onStatus: (item: Item, to: Status) => void;
   onSpj: (item: Item, on: boolean) => void;
+  onPic: (item: Item, pic: string) => void;
   onForm: (item: Item, mode: 'create' | 'edit') => void;
   onDelete: (item: Item) => void;
   onPlan: (p: Plan) => void;
 };
 
-const TILES: { id: string; label: string; cls: string }[] = [
-  { id: 'act', label: 'Perlu tindakan', cls: 't-act' },
-  { id: 'wait', label: 'Menunggu ACC', cls: 't-wait' },
-  { id: 'arsip', label: 'Arsip selesai', cls: 't-ok' },
-  { id: 'spj', label: 'SPJ lengkap ✓', cls: 't-spj' },
-];
 
-export default function Monitoring({ data, loading, error, onReload, onStatus, onSpj, onForm, onDelete, onPlan }: Props) {
+export default function Monitoring({ data, loading, error, onReload, onStatus, onSpj, onPic, onForm, onDelete, onPlan }: Props) {
   const [filter, setFilter] = useState('all');
   const [month, setMonth] = useState('all');
   const [q, setQ] = useState('');
@@ -67,13 +62,11 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
     const needle = q.trim().toLowerCase();
     return inMonth
       .filter((i) => f.test(i))
-      .filter((i) => !needle || (i.acara + ' ' + i.penyelenggara + ' ' + i.tempat + ' ' + (picByLink[i.linkLaporan] || '')).toLowerCase().includes(needle))
+      .filter((i) => !needle || (i.acara + ' ' + i.penyelenggara + ' ' + i.tempat + ' ' + (i.pic || picByLink[i.linkLaporan] || '')).toLowerCase().includes(needle))
       // tanggal rapat terbaru di atas; yang tanpa tanggal di bawah
       .sort((a, b) => (b.tanggalIso || '').localeCompare(a.tanggalIso || '') || b.rowId - a.rowId);
   }, [inMonth, filter, q, picByLink]);
 
-  const hasHero = (data?.plans || []).some((p) => ['segera', 'terlewat'].includes(planState(p).state));
-  const activeLabel = TILES.find((t) => t.id === filter)?.label;
 
   return (
     <div>
@@ -92,24 +85,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
         <div className="banner" key={i}>{w}</div>
       ))}
 
-      <div className={'bento' + (hasHero ? ' has-hero' : '')}>
       <Reminders plans={data?.plans || []} onCreate={onPlan} />
-
-      <div className="tiles">
-        {TILES.map((t) => (
-          <button key={t.id} className={'tile ' + t.cls + (filter === t.id ? ' on' : '')} onClick={() => setFilter(filter === t.id ? 'all' : t.id)} aria-pressed={filter === t.id}>
-            <span className="n">{counts[t.id] ?? 0}</span>
-            <span className="l">{t.label}</span>
-          </button>
-        ))}
-      </div>
-      </div>
-      {activeLabel && (
-        <div className="activefilter">
-          <span>Menampilkan: {activeLabel}</span>
-          <button className="ghost" onClick={() => setFilter('all')}>Tampilkan semua ({counts.all ?? 0})</button>
-        </div>
-      )}
 
       <div className="filters">
         <div className="field">
@@ -128,12 +104,20 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
         </div>
       </div>
 
+      <div className="chips" role="group" aria-label="Filter status">
+        {FILTERS.map((f) => (
+          <button key={f.id} className={'chip' + (filter === f.id ? ' on' : '')} onClick={() => setFilter(f.id)} aria-pressed={filter === f.id}>
+            {f.label} ({counts[f.id] ?? 0})
+          </button>
+        ))}
+      </div>
+
       {loading && !data && <div className="center">Memuat data rapat…</div>}
       {!loading && data && shown.length === 0 && <div className="center">Tidak ada rapat di daftar ini.</div>}
 
       <div className="cards">
         {shown.map((it) => (
-          <Card key={it.rowId} item={it} pic={picByLink[it.linkLaporan]} onStatus={onStatus} onSpj={onSpj} onForm={onForm} onDelete={onDelete} />
+          <Card key={it.rowId} item={it} pic={picByLink[it.linkLaporan]} onStatus={onStatus} onSpj={onSpj} onPic={onPic} onForm={onForm} onDelete={onDelete} />
         ))}
       </div>
     </div>
