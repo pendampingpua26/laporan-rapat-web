@@ -6,11 +6,12 @@ import { NEXT, STAGES, STATUSES, STATUS_META, type Status } from '@/lib/status';
 type Props = {
   item: Item;
   onStatus: (item: Item, to: Status) => void;
+  onSpj: (item: Item, on: boolean) => void;
   onForm: (item: Item, mode: 'create' | 'edit') => void;
   onDelete: (item: Item) => void;
 };
 
-export default function Card({ item, onStatus, onForm, onDelete }: Props) {
+export default function Card({ item, onStatus, onSpj, onForm, onDelete }: Props) {
   const [open, setOpen] = useState(false);
   const meta = STATUS_META[item.status];
   const next = NEXT[item.status];
@@ -24,8 +25,12 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
       <div className="meta">{item.tanggalText || 'Tanggal belum diisi'}</div>
       {item.penyelenggara && <div className="meta">{item.penyelenggara}</div>}
 
-      <div className={'badge ' + meta.tone}>
-        <span aria-hidden>{meta.icon}</span> {item.status}
+      <div className="row" style={{ gap: 8 }}>
+        <div className={'badge ' + meta.tone}>
+          <span aria-hidden>{meta.icon}</span> {item.status}
+        </div>
+        {item.spj && <div className="badge ok"><span aria-hidden>💰</span> SPJ ✓</div>}
+        {!item.spj && item.status === 'Arsip' && <div className="badge wait">Belum SPJ</div>}
       </div>
       {item.revisi > 0 && <div className="meta">Sudah direvisi {item.revisi}×</div>}
 
@@ -50,6 +55,11 @@ export default function Card({ item, onStatus, onForm, onDelete }: Props) {
           ))}
         </select>
       </div>
+
+      <label className="spj">
+        <input type="checkbox" checked={item.spj} onChange={(e) => onSpj(item, e.target.checked)} />
+        <span>SPJ (opsional, bisa dicentang kapan saja)</span>
+      </label>
 
       <div className="row">
         {next?.form && (
