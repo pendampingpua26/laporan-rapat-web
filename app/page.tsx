@@ -155,12 +155,13 @@ export default function Home() {
   }
 
   return (
-    <>
+    <div className="shell">
       <div className="wrap">
         {view === 'monitor' && (
           <Monitoring data={data} loading={loading} error={error} onReload={load} onStatus={changeStatus} onSpj={changeSpj} onForm={openForm} onDelete={del} onPlan={openFromPlan} />
         )}
         {view === 'form' && target && (
+          <div className="narrow">
           <Wizard
             key={target.draftId}
             mode={target.mode}
@@ -172,6 +173,7 @@ export default function Home() {
             onClose={closeForm}
             onSaved={load}
           />
+          </div>
         )}
         {view === 'kalender' && (
           <Kalender
@@ -187,7 +189,7 @@ export default function Home() {
             say={(text, bad) => say({ text, bad })}
           />
         )}
-        {view === 'drive' && <DriveLinks data={data} loading={loading} />}
+        {view === 'drive' && <div className="narrow"><DriveLinks data={data} loading={loading} /></div>}
         {view === 'monitor' && (
           <p style={{ textAlign: 'center', marginTop: 24 }}>
             <button className="ghost" onClick={logout}>Keluar</button>
@@ -217,6 +219,6 @@ export default function Home() {
           <Icon name="folder" />Drive
         </button>
       </nav>
-    </>
+    </div>
   );
 }
