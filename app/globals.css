@@ -194,9 +194,6 @@ button.day.sel, button.day.sel:hover:not(:disabled) { background: var(--primary)
   .calwrap .cards { grid-template-columns: 1fr; }
 }
 
-.toast { bottom: 24px !important; left: 260px !important; }
-  .cal { max-width: 560px; }
-}
 
 .toast {
   position: fixed; left: 12px; right: 12px; bottom: 92px; max-width: 696px; margin: 0 auto; z-index: 40;
