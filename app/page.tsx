@@ -82,6 +82,19 @@ export default function Home() {
     }
   }
 
+  async function changeSpj(item: Item, on: boolean) {
+    const patch = (v: boolean) =>
+      setData((d) => (d ? { ...d, items: d.items.map((i) => (i.rowId === item.rowId ? { ...i, spj: v } : i)) } : d));
+    patch(on);
+    try {
+      await rpc('setSpj', { rowId: item.rowId, spj: on });
+      say({ text: on ? 'SPJ dicentang.' : 'Centang SPJ dilepas.' });
+    } catch (e: any) {
+      patch(!on);
+      say({ text: 'SPJ gagal diubah: ' + e.message, bad: true }, 9000);
+    }
+  }
+
   function openForm(item: Item, mode: 'create' | 'edit') {
     setTarget({ mode, item, draftId: mode === 'edit' ? 'edit-' + item.key : 'mon-' + item.rowId });
     setView('form');
@@ -144,7 +157,7 @@ export default function Home() {
     <>
       <div className="wrap">
         {view === 'monitor' && (
-          <Monitoring data={data} loading={loading} error={error} onReload={load} onStatus={changeStatus} onForm={openForm} onDelete={del} onPlan={openFromPlan} />
+          <Monitoring data={data} loading={loading} error={error} onReload={load} onStatus={changeStatus} onSpj={changeSpj} onForm={openForm} onDelete={del} onPlan={openFromPlan} />
         )}
         {view === 'form' && target && (
           <Wizard

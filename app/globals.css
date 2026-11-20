@@ -141,3 +141,6 @@ textarea { resize: vertical; }
 .tag.akan { background: var(--info-bg); color: var(--info); }
 .riwayat { white-space: pre-line; font-size: .9rem; color: var(--muted); background: #f4f6f9; border-radius: 10px; padding: 8px 10px; }
 .nav button { min-width: 0; }
+
+.spj { display: flex; gap: 12px; align-items: center; min-height: 48px; margin: 0 0 12px; font-weight: 600; }
+.spj input { width: 26px; height: 26px; flex: none; }
