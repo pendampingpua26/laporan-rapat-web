@@ -42,5 +42,4 @@ export const FILTERS: { id: string; label: string; test: (i: { status: Status; s
   { id: 'wait', label: 'Menunggu ACC', test: (i) => ['Laporan Dibuat', 'ACC Kasubkel'].includes(i.status) },
   { id: 'arsip', label: 'Arsip', test: (i) => i.status === 'Arsip' },
   { id: 'spj', label: 'SPJ ✓', test: (i) => i.spj },
-  { id: 'nospj', label: 'Belum SPJ', test: (i) => !i.spj },
 ];
