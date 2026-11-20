@@ -14,6 +14,7 @@ export type Item = {
   key: string;
   revisi: number;
   spj: boolean;
+  pic: string;
   riwayat: string;
 };
 
