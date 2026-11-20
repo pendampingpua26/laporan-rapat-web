@@ -12,12 +12,13 @@ type Props = {
   error: string;
   onReload: () => void;
   onStatus: (item: Item, to: Status) => void;
+  onSpj: (item: Item, on: boolean) => void;
   onForm: (item: Item, mode: 'create' | 'edit') => void;
   onDelete: (item: Item) => void;
   onPlan: (p: Plan) => void;
 };
 
-export default function Monitoring({ data, loading, error, onReload, onStatus, onForm, onDelete, onPlan }: Props) {
+export default function Monitoring({ data, loading, error, onReload, onStatus, onSpj, onForm, onDelete, onPlan }: Props) {
   const [filter, setFilter] = useState('all');
   const [month, setMonth] = useState('all');
   const [q, setQ] = useState('');
@@ -44,7 +45,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
 
   const counts = useMemo(() => {
     const o: Record<string, number> = {};
-    FILTERS.forEach((f) => (o[f.id] = inMonth.filter((i) => f.test(i.status)).length));
+    FILTERS.forEach((f) => (o[f.id] = inMonth.filter((i) => f.test(i)).length));
     return o;
   }, [inMonth]);
 
@@ -52,7 +53,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
     const f = FILTERS.find((x) => x.id === filter) || FILTERS[0];
     const needle = q.trim().toLowerCase();
     return inMonth
-      .filter((i) => f.test(i.status))
+      .filter((i) => f.test(i))
       .filter((i) => !needle || (i.acara + ' ' + i.penyelenggara + ' ' + i.tempat).toLowerCase().includes(needle))
       // tanggal rapat terbaru di atas; yang tanpa tanggal di bawah
       .sort((a, b) => (b.tanggalIso || '').localeCompare(a.tanggalIso || '') || b.rowId - a.rowId);
@@ -99,7 +100,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
       {!loading && data && shown.length === 0 && <div className="center">Tidak ada rapat di daftar ini.</div>}
 
       {shown.map((it) => (
-        <Card key={it.rowId} item={it} onStatus={onStatus} onForm={onForm} onDelete={onDelete} />
+        <Card key={it.rowId} item={it} onStatus={onStatus} onSpj={onSpj} onForm={onForm} onDelete={onDelete} />
       ))}
     </div>
   );
