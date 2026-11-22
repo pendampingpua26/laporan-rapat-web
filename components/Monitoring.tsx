@@ -7,6 +7,7 @@ import { todayIso } from '@/lib/plan';
 import Card from './Card';
 import Reminders from './Reminders';
 import Icon from './Icon';
+import { download, toCsv, toXlsx } from '@/lib/export';
 
 type Props = {
   data: ListData | null;
@@ -26,6 +27,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
   const [filter, setFilter] = useState('all');
   const [month, setMonth] = useState('all');
   const [q, setQ] = useState('');
+  const [menu, setMenu] = useState(false);
 
   const items = data?.items || [];
   const picByLink = useMemo(() => {
@@ -67,6 +69,27 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
       .sort((a, b) => (b.tanggalIso || '').localeCompare(a.tanggalIso || '') || b.rowId - a.rowId);
   }, [inMonth, filter, q, picByLink]);
 
+  const thisMonth = todayIso().slice(0, 7);
+  const totalLabel = month === 'all' ? 'Total Rapat' : month === thisMonth ? 'Total Bulan Ini' : month === 'none' ? 'Total Tanpa Tanggal' : 'Total ' + monthLabel(month);
+  const tiles = [
+    { id: 'all', label: totalLabel, tone: 'neutral' },
+    { id: 'act', label: 'Perlu Tindakan / Revisi', tone: 'act' },
+    { id: 'wait', label: 'Menunggu ACC', tone: 'wait' },
+    { id: 'spj', label: 'Sudah SPJ ✓', tone: 'ok' },
+  ];
+
+  function exportRekap(kind: 'xlsx' | 'csv') {
+    setMenu(false);
+    const head = ['No', 'Tanggal Rapat', 'Acara', 'Tempat', 'Penyelenggara', 'Penerima Disposisi', 'Status', 'SPJ', 'Jumlah Revisi', 'Link Laporan'];
+    const rows = shown.map((i, n) => [
+      n + 1, i.tanggalText || '', i.acara, i.tempat || '', i.penyelenggara || '', i.pic || picByLink[i.linkLaporan] || '',
+      i.status, i.spj ? 'Ya' : 'Belum', i.revisi || 0, i.linkLaporan || '',
+    ]);
+    const all = [head, ...rows];
+    const f = FILTERS.find((x) => x.id === filter) || FILTERS[0];
+    const name = `rekap-laporan-rapat-${month === 'all' ? 'semua-bulan' : month}-${f.id}.${kind}`;
+    download(kind === 'xlsx' ? toXlsx(all, 'Rekap Rapat', [5, 26, 44, 28, 28, 26, 18, 9, 14, 40]) : toCsv(all), name);
+  }
 
   return (
     <div>
@@ -85,6 +108,15 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
         <div className="banner" key={i}>{w}</div>
       ))}
 
+      <div className="bento" role="group" aria-label="Ringkasan">
+        {tiles.map((t) => (
+          <button key={t.id} className={'tile ' + t.tone + (filter === t.id ? ' on' : '')} onClick={() => setFilter(t.id)} aria-pressed={filter === t.id}>
+            <b>{counts[t.id] ?? 0}</b>
+            <span>{t.label}</span>
+          </button>
+        ))}
+      </div>
+
       <Reminders plans={data?.plans || []} onCreate={onPlan} />
 
       <div className="filters">
@@ -100,7 +132,7 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
         </div>
         <div className="field">
           <label htmlFor="q">Cari rapat</label>
-          <input id="q" type="search" placeholder="Nama acara, tempat, atau PIC" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input id="q" type="search" placeholder="Nama acara, tempat, atau penerima disposisi" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
       </div>
 
@@ -110,6 +142,19 @@ export default function Monitoring({ data, loading, error, onReload, onStatus, o
             {f.label} ({counts[f.id] ?? 0})
           </button>
         ))}
+      </div>
+
+      <div className="exportbar">
+        <span className="meta">{shown.length} rapat tampil</span>
+        <div className="menuwrap">
+          <button className="ghost" onClick={() => setMenu(!menu)} disabled={shown.length === 0} aria-expanded={menu}>⬇ Export Rekap</button>
+          {menu && (
+            <div className="menu">
+              <button className="ghost" onClick={() => exportRekap('xlsx')}>Excel (.xlsx)</button>
+              <button className="ghost" onClick={() => exportRekap('csv')}>CSV (.csv)</button>
+            </div>
+          )}
+        </div>
       </div>
 
       {loading && !data && <div className="center">Memuat data rapat…</div>}

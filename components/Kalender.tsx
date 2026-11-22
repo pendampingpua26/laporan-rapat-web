@@ -69,7 +69,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
   async function submit() {
     if (!draft) return;
     if (!draft.tanggalIso || !draft.rapat.trim() || !draft.pic.trim()) {
-      setErr('Tanggal, nama rapat, dan PIC wajib diisi.');
+      setErr('Tanggal, nama rapat, dan Penerima Disposisi wajib diisi.');
       return;
     }
     setBusy(true);
@@ -102,7 +102,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
     <div>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div className="eyebrow">✦ Jadwal rapat &amp; PIC</div>
+          <div className="eyebrow">✦ Jadwal rapat &amp; Penerima Disposisi</div>
           <h1>Kalender rapat</h1>
         </div>
         <button className="ghost" onClick={onReload} disabled={loading} aria-label="Muat ulang">
@@ -173,7 +173,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
             <input id="jr" type="text" value={draft.rapat} onChange={(e) => setDraft({ ...draft, rapat: e.target.value })} />
           </div>
           <div className="field">
-            <label htmlFor="jp">PIC (pembuat laporan)</label>
+            <label htmlFor="jp">Penerima Disposisi</label>
             <input id="jp" type="text" value={draft.pic} onChange={(e) => setDraft({ ...draft, pic: e.target.value })} />
           </div>
           {err && <div className="err">{err}</div>}
@@ -192,7 +192,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
         return (
           <div className="card" key={p.id}>
             <h3>{p.rapat}</h3>
-            <div className="meta">PIC: <b>{p.pic}</b></div>
+            <div className="meta">Penerima Disposisi: <b>{p.pic}</b></div>
             <div style={{ margin: '8px 0' }}><span className={'tag ' + (s.state === 'selesai' ? 'selesai' : s.state)}>{label}</span><span className="meta">Laporan belum dibuat</span></div>
             <div className="row">
               <button className="grow" onClick={() => onPlan(p)}>Buat laporan</button>
@@ -219,7 +219,7 @@ export default function Kalender({ items, plans, loading, onReload, onStatus, on
             <div className="it" key={p.id}>
               <div style={{ minWidth: 0 }}>
                 <b>{p.rapat}</b>
-                <span className="meta">PIC: {p.pic} · {fmtDate(p.tanggalIso)}</span>
+                <span className="meta">Penerima Disposisi: {p.pic} · {fmtDate(p.tanggalIso)}</span>
               </div>
               <button className="ghost" onClick={() => jumpTo(p.tanggalIso)}>Buka</button>
             </div>

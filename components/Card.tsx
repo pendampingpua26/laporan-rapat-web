@@ -28,7 +28,7 @@ export default function Card({ item, onStatus, onSpj, onPic, onForm, onDelete, p
       <h3>{item.acara}</h3>
       <div className="meta">{item.tanggalText || 'Tanggal belum diisi'}</div>
       {item.penyelenggara && <div className="meta">{item.penyelenggara}</div>}
-      <div className="meta">PIC: {shownPic ? <b>{shownPic}</b> : <i>belum diisi</i>}</div>
+      <div className="meta">Penerima Disposisi: {shownPic ? <b>{shownPic}</b> : <i>belum diisi</i>}</div>
 
       <div className="row" style={{ gap: 8 }}>
         <div className={'badge ' + meta.tone}>
@@ -79,7 +79,7 @@ export default function Card({ item, onStatus, onSpj, onPic, onForm, onDelete, p
       {open && (
         <div className="more">
           <div className="field" style={{ margin: 0 }}>
-            <label htmlFor={'pic' + item.rowId}>PIC (pembuat laporan)</label>
+            <label htmlFor={'pic' + item.rowId}>Penerima Disposisi</label>
             <div className="row">
               <input id={'pic' + item.rowId} type="text" value={picDraft} onChange={(e) => setPicDraft(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
               <button className="ghost" disabled={picDraft.trim() === shownPic} onClick={() => onPic(item, picDraft.trim())}>Simpan</button>
