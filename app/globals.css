@@ -206,3 +206,49 @@ details > summary { cursor: pointer; min-height: 40px; display: flex; align-item
 .d { display: inline-block; flex: none; }
 .pill.late { background: var(--primary); color: #fff; }
 .hero-more .lt { color: var(--act); }
+
+/* ===== Modul Nota Dinas ===== */
+.navsep { border: 0; border-left: 1px solid rgba(232, 223, 211, .35); align-self: stretch; margin: 8px 2px; flex: none; }
+.navic { position: relative; display: inline-flex; }
+.navbadge { position: absolute; top: -6px; right: -12px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--gold); color: var(--cocoa); font-size: .68rem; line-height: 18px; text-align: center; font-weight: 800; }
+.nav button.on .navbadge { background: #fff; color: var(--primary); }
+@media (max-width: 1023px) { .nav { width: min(94%, 470px); } .nav button { font-size: .68rem; } }
+@media (min-width: 1024px) {
+  .navsep { border-left: 0; border-top: 1px dashed var(--sand); align-self: auto; margin: 8px 6px; width: auto; }
+  .navbadge { position: static; order: 2; margin-left: auto; background: var(--gold-soft); color: var(--gold-text); }
+  .nav button .navic { display: contents; }
+  .nav button.on .navbadge { background: #fff; color: var(--primary); }
+}
+.tabs { display: flex; gap: 8px; margin: 4px 0 16px; background: var(--cream2); border: 1px solid var(--sand); border-radius: 999px; padding: 5px; }
+.tab { flex: 1; min-height: 46px; background: transparent; color: var(--cocoa); border: 0; padding: 6px 12px; }
+.tab:hover:not(:disabled) { background: #fff; }
+.tab.on, .tab.on:hover:not(:disabled) { background: var(--primary); color: #fff; }
+.cnt { display: inline-block; min-width: 22px; padding: 0 7px; border-radius: 999px; background: var(--gold-soft); color: var(--gold-text); font-size: .8rem; line-height: 22px; }
+.tab.on .cnt { background: #fff; color: var(--primary); }
+.sifat { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: .8rem; font-weight: 800; margin-bottom: 6px; border: 1px solid transparent; }
+.sifat.merah { background: var(--primary-soft); color: var(--act); border-color: #efb8b0; }
+.sifat.amber { background: var(--gold-soft); color: var(--gold-text); border-color: var(--gold); }
+.sifat.ungu { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+.sifat.abu { background: #efece7; color: var(--bark); border-color: var(--sand); }
+.ndbox { background: var(--cream); border: 1px solid var(--sand); border-radius: 18px; padding: 10px 14px; margin: 4px 0 12px; display: grid; gap: 8px; font-size: .95rem; overflow-wrap: anywhere; white-space: pre-line; }
+.ndbox > div > span { display: block; font-size: .76rem; font-weight: 800; color: var(--bark); text-transform: uppercase; letter-spacing: .04em; }
+.ndbox .spj { white-space: normal; }
+
+/* ===== Ringkasan angka (bento) + export ===== */
+.bento { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 6px 0 16px; }
+@media (min-width: 640px) { .bento { grid-template-columns: repeat(4, 1fr); } }
+button.tile { flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 2px; text-align: left; min-height: 92px; padding: 12px 16px; border-radius: 22px; border: 2px solid transparent; box-shadow: var(--shadow); font-weight: 600; }
+button.tile b { font-family: var(--serif); font-size: 2rem; line-height: 1; }
+button.tile span { font-size: .82rem; font-weight: 700; line-height: 1.25; }
+button.tile.neutral, button.tile.neutral:hover:not(:disabled) { background: #fff; color: var(--cocoa); border-color: var(--sand); }
+button.tile.act, button.tile.act:hover:not(:disabled) { background: var(--primary-soft); color: var(--act); border-color: #f3cfc9; }
+button.tile.wait, button.tile.wait:hover:not(:disabled) { background: var(--sky-soft); color: var(--sky); border-color: #bde3f7; }
+button.tile.ok, button.tile.ok:hover:not(:disabled) { background: var(--leaf-soft); color: var(--ok); border-color: #b7ebc6; }
+button.tile:hover:not(:disabled) { transform: translateY(-1px); }
+button.tile.on.neutral { border-color: var(--cocoa); }
+button.tile.on.act { border-color: var(--primary); }
+button.tile.on.wait { border-color: var(--sky); }
+button.tile.on.ok { border-color: var(--leaf); }
+.exportbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: -4px 0 12px; }
+.menuwrap { position: relative; }
+.menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 10; background: #fff; border: 1px solid var(--sand); border-radius: 20px; box-shadow: var(--shadow); padding: 8px; display: grid; gap: 6px; min-width: 190px; }

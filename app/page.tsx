@@ -5,12 +5,15 @@ import Monitoring from '@/components/Monitoring';
 import Wizard from '@/components/Wizard';
 import DriveLinks from '@/components/DriveLinks';
 import Kalender from '@/components/Kalender';
+import NotaDinas from '@/components/NotaDinas';
+import NdForm from '@/components/NdForm';
 import Icon from '@/components/Icon';
+import { activeCount, type NdData, type NdKind } from '@/lib/nd';
 import { rpc } from '@/lib/client';
 import type { Item, ListData, Plan } from '@/lib/types';
 import type { Status } from '@/lib/status';
 
-type View = 'monitor' | 'kalender' | 'form' | 'drive';
+type View = 'monitor' | 'kalender' | 'form' | 'drive' | 'nd' | 'ndform';
 type FormTarget = { mode: 'create' | 'edit'; item?: Item; plan?: Plan; draftId: string };
 type Toast = { text: string; bad?: boolean; undo?: () => void } | null;
 
@@ -22,6 +25,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState<Toast>(null);
+  const [nd, setNd] = useState<NdData | null>(null);
+  const [ndLoading, setNdLoading] = useState(false);
+  const [ndError, setNdError] = useState('');
+  const [ndEdit, setNdEdit] = useState<{ kind: NdKind; item: any } | null>(null);
   const timer = useRef<any>(null);
 
   const say = useCallback((t: Toast, ms = 6000) => {
@@ -52,9 +59,63 @@ export default function Home() {
     return () => window.removeEventListener('lr-logout', out);
   }, []);
 
+  const loadNd = useCallback(async () => {
+    setNdLoading(true);
+    setNdError('');
+    try {
+      setNd(await rpc<NdData>('ndList'));
+    } catch (e: any) {
+      setNdError(e.message);
+    } finally {
+      setNdLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (authed) load();
-  }, [authed, load]);
+    if (authed) {
+      load();
+      loadNd(); // dimuat di latar agar angka di menu Nota Dinas langsung muncul
+    }
+  }, [authed, load, loadNd]);
+
+  const patchNd = (kind: NdKind, rowId: number, p: Record<string, any>) =>
+    setNd((d) => (d ? { ...d, [kind]: (d[kind] as any[]).map((i) => (i.rowId === rowId ? { ...i, ...p } : i)) } : d));
+
+  async function ndStatus(kind: NdKind, item: any, to: string) {
+    if (to === item.status) return;
+    const before = { status: item.status, rawStatus: item.rawStatus, revisi: item.revisi };
+    patchNd(kind, item.rowId, { status: to, rawStatus: to, revisi: /^revisi/i.test(to) ? item.revisi + 1 : item.revisi });
+    try {
+      await rpc('ndStatus', { kind, rowId: item.rowId, status: to });
+      say({ text: `Status diubah menjadi “${to}”.` });
+    } catch (e: any) {
+      patchNd(kind, item.rowId, before);
+      say({ text: 'Status gagal diubah: ' + e.message, bad: true }, 9000);
+    }
+  }
+
+  async function ndCheck(kind: NdKind, item: any, field: string, on: boolean) {
+    patchNd(kind, item.rowId, { [field]: on });
+    try {
+      await rpc('ndCheck', { kind, rowId: item.rowId, field, on });
+      say({ text: on ? 'Dicentang.' : 'Centang dilepas.' });
+    } catch (e: any) {
+      patchNd(kind, item.rowId, { [field]: !on });
+      say({ text: 'Gagal menyimpan centang: ' + e.message, bad: true }, 9000);
+    }
+  }
+
+  async function ndDelete(kind: NdKind, item: any) {
+    const nama = kind === 'masuk' ? item.Prihal : item.Hal;
+    if (!window.confirm(`Hapus surat “${nama}”?\n\nBarisnya dihapus dari spreadsheet Disposisi Surat Kesra. Tidak bisa dibatalkan.`)) return;
+    try {
+      await rpc('ndRemove', { kind, rowId: item.rowId });
+      say({ text: 'Surat dihapus dari spreadsheet.' });
+      loadNd(); // nomor baris bergeser, muat ulang
+    } catch (e: any) {
+      say({ text: 'Gagal menghapus: ' + e.message, bad: true }, 9000);
+    }
+  }
 
   async function changeStatus(item: Item, to: Status) {
     if (to === item.status) return;
@@ -103,10 +164,10 @@ export default function Home() {
     patch(pic);
     try {
       await rpc('setPic', { rowId: item.rowId, pic });
-      say({ text: 'PIC disimpan.' });
+      say({ text: 'Penerima Disposisi disimpan.' });
     } catch (e: any) {
       patch(before);
-      say({ text: 'PIC gagal disimpan: ' + e.message, bad: true }, 9000);
+      say({ text: 'Penerima Disposisi gagal disimpan: ' + e.message, bad: true }, 9000);
     }
   }
 
@@ -158,6 +219,7 @@ export default function Home() {
   const initial: Record<string, string> = {};
   if (target?.plan) {
     initial['Acara'] = target.plan.rapat;
+    if (target.plan.pic) initial['Penerima Disposisi'] = target.plan.pic;
     if (target.plan.tanggalIso) initial['Hari/Tanggal Pelaksanaan Rapat'] = target.plan.tanggalIso;
   }
   if (target?.item) {
@@ -166,6 +228,8 @@ export default function Home() {
     if (it.tanggalIso) initial['Hari/Tanggal Pelaksanaan Rapat'] = it.tanggalIso;
     if (it.tempat) initial['Tempat Rapat'] = it.tempat;
     if (it.penyelenggara) initial['Penyelenggara Rapat'] = it.penyelenggara;
+    const pp = it.pic || (data?.plans || []).find((p) => p.linkLaporan && p.linkLaporan === it.linkLaporan)?.pic;
+    if (pp) initial['Penerima Disposisi'] = pp;
   }
 
   return (
@@ -204,6 +268,29 @@ export default function Home() {
             say={(text, bad) => say({ text, bad })}
           />
         )}
+        {view === 'nd' && (
+          <NotaDinas
+            data={nd}
+            loading={ndLoading}
+            error={ndError}
+            onReload={loadNd}
+            onStatus={ndStatus}
+            onCheck={ndCheck}
+            onEdit={(kind, item) => { setNdEdit({ kind, item }); setView('ndform'); window.scrollTo({ top: 0 }); }}
+            onDelete={ndDelete}
+          />
+        )}
+        {view === 'ndform' && (
+          <div className="narrow">
+            <NdForm
+              key={ndEdit ? ndEdit.kind + ndEdit.item.rowId : 'baru'}
+              kind={ndEdit?.kind}
+              item={ndEdit?.item}
+              onClose={() => { setNdEdit(null); setView('nd'); window.scrollTo({ top: 0 }); }}
+              onSaved={() => loadNd()}
+            />
+          </div>
+        )}
         {view === 'drive' && <div className="narrow"><DriveLinks data={data} loading={loading} /></div>}
         {view === 'monitor' && (
           <p style={{ textAlign: 'center', marginTop: 24 }}>
@@ -232,6 +319,13 @@ export default function Home() {
         </button>
         <button className={view === 'drive' ? 'on' : ''} onClick={() => { setView('drive'); setTarget(null); }}>
           <Icon name="folder" />Drive
+        </button>
+        <hr className="navsep" />
+        <button className={view === 'nd' ? 'on' : ''} onClick={() => { setView('nd'); setNdEdit(null); setTarget(null); }}>
+          <span className="navic"><Icon name="mail" />{activeCount(nd) > 0 && <b className="navbadge">{activeCount(nd)}</b>}</span>Nota Dinas
+        </button>
+        <button className={view === 'ndform' ? 'on' : ''} onClick={() => { setNdEdit(null); setTarget(null); setView('ndform'); window.scrollTo({ top: 0 }); }}>
+          <Icon name="mailplus" />Input Nota
         </button>
       </nav>
     </div>
