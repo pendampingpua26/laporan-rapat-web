@@ -13,6 +13,18 @@ type Props = {
   pic?: string;
 };
 
+// Rincian revisi dibaca dari riwayat status ("... -> Revisi Kabid"); sisa yang tak tercatat di riwayat ditampilkan terpisah.
+export function revisiParts(riwayat: string, total: number): { label: string; n: number }[] {
+  const count = (re: RegExp) => (riwayat.match(re) || []).length;
+  const parts = [
+    { label: 'Revisi Kasubkel', n: count(/->\s*Revisi Kasubkel/g) },
+    { label: 'Revisi Kabid', n: count(/->\s*Revisi Kabid/g) },
+  ];
+  const sum = parts[0].n + parts[1].n;
+  if (total > sum) parts.push({ label: sum ? 'Revisi lain (tanpa rincian)' : 'Revisi', n: total - sum });
+  return parts.filter((x) => x.n > 0);
+}
+
 export default function Card({ item, onStatus, onSpj, onPic, onForm, onDelete, pic }: Props) {
   const [open, setOpen] = useState(false);
   const shownPic = item.pic || pic || '';
@@ -36,7 +48,14 @@ export default function Card({ item, onStatus, onSpj, onPic, onForm, onDelete, p
         </div>
         {item.spj && <div className="badge ok"><span aria-hidden>💰</span> SPJ ✓</div>}
       </div>
-      {item.revisi > 0 && <div className="meta">Sudah direvisi {item.revisi}×</div>}
+      {item.revisi > 0 && (
+        <div className="meta">
+          Sudah direvisi {item.revisi}× ·{' '}
+          {revisiParts(item.riwayat || '', item.revisi).map((x, i) => (
+            <span key={x.label}>{i > 0 && ' · '}{x.label} <b>{x.n}×</b></span>
+          ))}
+        </div>
+      )}
 
       <div className="progress" aria-label={'Tahap: ' + item.status}>
         {STAGES.map((s, i) => {
